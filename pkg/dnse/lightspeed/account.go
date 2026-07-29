@@ -1,13 +1,11 @@
-package rest
+package lightspeed
 
 import (
 	"context"
 	"fmt"
-
-	"trading-bot/internal/config"
 )
 
-// Account is a single trading sub-account under the authenticated investor.
+// Account is a single trading subaccount under the authenticated investor.
 type Account struct {
 	ID                string `json:"id"`
 	DealAccount       bool   `json:"dealAccount"`
@@ -16,23 +14,23 @@ type Account struct {
 
 // AccountsResponse is the payload returned by GET /accounts.
 type AccountsResponse struct {
-	Accounts    []Account `json:"accounts"`
+	Name        string    `json:"name"`
 	CustodyCode string    `json:"custodyCode"`
 	InvestorID  string    `json:"investorId"`
-	Name        string    `json:"name"`
+	Accounts    []Account `json:"accounts"`
 }
 
 // GetAccounts retrieves the investor's identity and trading sub-accounts.
 // https://developers.dnse.com.vn/docs/dnse/get-accounts
 func (c *Client) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
 	var result AccountsResponse
-	if err := c.get(ctx, config.Accounts, &result); err != nil {
+	if err := c.get(ctx, pathAccounts, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-// StockBalance is the stock sub-account balance breakdown.
+// StockBalance is the stock subaccount balance breakdown.
 type StockBalance struct {
 	AvailableCash         int64 `json:"availableCash"`
 	CashDividendReceiving int64 `json:"cashDividendReceiving"`
@@ -48,10 +46,10 @@ type AccountBalanceResponse struct {
 	Stock *StockBalance `json:"stock"`
 }
 
-// GetBalance retrieves the balance of a trading sub-account.
-// https://developers.dnse.com.vn/docs/dnse/get-balance
+// GetBalance retrieves the balance of a trading subaccount.
+// https://developers.dnse.com.vn/docs/dnse/get-account-balances
 func (c *Client) GetBalance(ctx context.Context, accountNo string) (*AccountBalanceResponse, error) {
-	path := fmt.Sprintf(config.AccountBalances, accountNo)
+	path := fmt.Sprintf(pathAccountBalances, accountNo)
 	var result AccountBalanceResponse
 	if err := c.get(ctx, path, &result); err != nil {
 		return nil, err

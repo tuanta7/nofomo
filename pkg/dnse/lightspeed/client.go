@@ -1,4 +1,4 @@
-package rest
+package lightspeed
 
 import (
 	"context"
@@ -16,18 +16,25 @@ import (
 	"resty.dev/v3"
 )
 
-// DNSE date-versions its OpenAPI; required on every request via the "version" header.
-const apiVersion = "2026-05-07"
+const (
+	// DNSE date-versions its OpenAPI; required on every request via the "version" header.
+	apiVersion = "2026-05-07"
+
+	baseURL                    = "https://openapi.dnse.com.vn"
+	pathAccounts               = "/accounts"
+	pathAccountBalances        = "/accounts/%s/balances"
+	pathAccountLoanPackages    = "/accounts/%s/loan-packages"
+	pathAccountPurchasingPower = "/accounts/%s/ppse"
+)
 
 type Client struct {
 	client    *resty.Client
 	apiKey    string
 	apiSecret string
-	baseUrl   string
 	logger    *zap.Logger
 }
 
-// get sends an HMAC-signed GET request to path and decodes the JSON response into result.
+// get sends an HMAC-signed GET request to a path and decodes the JSON response into a result.
 func (c *Client) get(ctx context.Context, path string, result any) error {
 	date, signature, err := c.sign("GET", path)
 	if err != nil {
@@ -41,7 +48,7 @@ func (c *Client) get(ctx context.Context, path string, result any) error {
 		SetHeader("X-Signature", signature).
 		SetHeader("version", apiVersion).
 		SetResult(result).
-		Get(c.baseUrl + path)
+		Get(baseURL + path)
 	if err != nil {
 		return fmt.Errorf("dnse: GET %s: %w", path, err)
 	}
