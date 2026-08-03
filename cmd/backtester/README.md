@@ -4,10 +4,10 @@ Backtesting trading strategies with Binance data.
 
 ```mermaid
 flowchart LR
-    B[Binance WS] --> I[Ingestion]
+    B[Binance WS] --> I[Collector]
     I --> K[(Kafka)]
-    K --> S[Storage]
+    K --> T[Backtester]
     K --> P[Price Board]
-    S --> T[Backtest]
-    S --> C[(ClickHouse)]
+    T --> C[(ClickHouse)]
+    C --> T
 ```

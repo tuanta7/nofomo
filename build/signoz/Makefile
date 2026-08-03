@@ -6,6 +6,6 @@ install-foundry:
 
 signoz-up:
 	# Open ports: 8080 (SigNoz UI), 4317 and 4318 (OTLP ingestion)
-	echo "Need at least 4GB of memory allocated to Docker"
+	echo "Docker needs at least 4GB of RAM to run SigNoz"
 	docker info --format 'OS: {{.OperatingSystem}} | Memory: {{.MemTotal}} bytes | CPU: {{.NCPU}}'
 	foundryctl cast -f casting.yaml

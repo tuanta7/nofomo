@@ -6,6 +6,7 @@ x-common: &common
         cpus: '0.25'
         memory: 256M
 
+name: nofomo
 services:
   kafka:
     !!merge <<: *common
