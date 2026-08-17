@@ -1,4 +1,4 @@
-package bn
+package binance
 
 import (
 	"go.opentelemetry.io/otel/metric"

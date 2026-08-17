@@ -1,4 +1,4 @@
-package domain
+package tick
 
 // Tick is the record of a single trade in the system.
 // All data from external sources will eventually be mapped to this.

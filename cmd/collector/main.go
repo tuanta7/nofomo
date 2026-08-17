@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tuanta7/nofomo/cmd/collector/bn"
+	"github.com/tuanta7/nofomo/cmd/collector/binance"
 	"github.com/tuanta7/nofomo/pkg/o11y"
 	"go.uber.org/zap"
 
@@ -43,7 +43,7 @@ func main() {
 		_ = meterProvider.Shutdown(shutdownCtx)
 	}()
 
-	if err = bn.Run(ctx, logger, meterProvider); err != nil {
+	if err = binance.Run(ctx, logger, meterProvider); err != nil {
 		logger.Fatal("run collector", zap.Error(err))
 	}
 }
