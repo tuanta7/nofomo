@@ -2,15 +2,17 @@ package strategy
 
 import "fmt"
 
-// EMACross goes long when the fast EMA crosses above the slow one and flat when it
-// crosses back below. It keeps rolling EMA state, so Evaluate must be called once
-// per candle in order, as the Strategy contract requires.
 type EMACross struct {
-	fastK, slowK float64 // smoothing multipliers, 2/(period+1)
-	fast, slow   float64
-	seen         int
-	warmup       int
-	fastAbove    bool
+	// fastK and slowK are the smoothing factors for the fast and slow EMAs
+	fastK, slowK float64
+	// fast and slow are the current values of the fast and slow EMAs
+	fast, slow float64
+	// seen counts how many bars have been processed
+	seen int
+	// warmup is the number of bars to process before the first signal can be generated
+	warmup int
+	// fastAbove tracks whether the fast EMA is above the slow one, so we can detect crossings
+	fastAbove bool
 }
 
 func NewEMACross(fastPeriod, slowPeriod int) (*EMACross, error) {
@@ -38,8 +40,6 @@ func (e *EMACross) Evaluate(ctx Context) Signal {
 	}
 	e.seen++
 
-	// Both EMAs are seeded from the same price, so early bars say nothing about
-	// trend. Track the relationship through warmup, but stay silent.
 	above := e.fast > e.slow
 	if e.seen <= e.warmup {
 		e.fastAbove = above
