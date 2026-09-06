@@ -40,7 +40,7 @@ func TestRunFillsAtNextOpen(t *testing.T) {
 	}
 	script := signals{strategy.Buy, strategy.Hold, strategy.Sell, strategy.Hold}
 
-	got := Run(cs, script, 1000, 0)
+	got := RunBacktest(cs, script, 1000, 0)
 
 	// 1000 / 110 units sold at 200 → 1000 * 200/110.
 	want := 200.0/110.0 - 1
@@ -63,7 +63,7 @@ func TestRunLiquidatesOpenPosition(t *testing.T) {
 		bar(1, 100, 100),
 		bar(2, 100, 250),
 	}
-	got := Run(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
+	got := RunBacktest(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
 
 	if want := 250.0/100.0 - 1; math.Abs(got.Return-want) > 1e-9 {
 		t.Errorf("Return = %v, want %v", got.Return, want)
@@ -83,11 +83,11 @@ func TestRunChargesFeesBothSides(t *testing.T) {
 	}
 	script := signals{strategy.Buy, strategy.Hold, strategy.Sell, strategy.Hold}
 
-	if got := Run(cs, script, 1000, 0); math.Abs(got.Return) > 1e-9 {
+	if got := RunBacktest(cs, script, 1000, 0); math.Abs(got.Return) > 1e-9 {
 		t.Errorf("Return with no fee = %v, want 0", got.Return)
 	}
 
-	got := Run(cs, script, 1000, 5)
+	got := RunBacktest(cs, script, 1000, 5)
 	if want := 0.9995*0.9995 - 1; math.Abs(got.Return-want) > 1e-9 {
 		t.Errorf("Return with 5bps = %v, want %v", got.Return, want)
 	}
@@ -103,7 +103,7 @@ func TestRunDrawdownAndBuyHold(t *testing.T) {
 		bar(1, 100, 50),
 		bar(2, 50, 80),
 	}
-	got := Run(cs, signals{strategy.Hold, strategy.Hold, strategy.Hold}, 1000, 0)
+	got := RunBacktest(cs, signals{strategy.Hold, strategy.Hold, strategy.Hold}, 1000, 0)
 
 	if got.MaxDrawdown != 0 || got.Return != 0 {
 		t.Errorf("flat run: MaxDrawdown = %v, Return = %v, want 0/0", got.MaxDrawdown, got.Return)
@@ -113,14 +113,14 @@ func TestRunDrawdownAndBuyHold(t *testing.T) {
 	}
 
 	// Long through the crash: peak 1000 at bar 0, trough 500 at bar 1.
-	long := Run(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
+	long := RunBacktest(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
 	if want := -0.5; math.Abs(long.MaxDrawdown-want) > 1e-9 {
 		t.Errorf("MaxDrawdown = %v, want %v", long.MaxDrawdown, want)
 	}
 }
 
 func TestRunEmpty(t *testing.T) {
-	if got := Run(nil, signals{}, 1000, 5); got != (BacktestReport{}) {
+	if got := RunBacktest(nil, signals{}, 1000, 5); got != (BacktestReport{}) {
 		t.Errorf("run(nil) = %+v, want zero Result", got)
 	}
 }

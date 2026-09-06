@@ -13,17 +13,17 @@ type EMACross struct {
 	fastAbove    bool
 }
 
-func NewEMACross(fast, slow int) (*EMACross, error) {
-	if fast < 1 || slow < 1 {
-		return nil, fmt.Errorf("ema cross: periods must be positive, got fast=%d slow=%d", fast, slow)
+func NewEMACross(fastPeriod, slowPeriod int) (*EMACross, error) {
+	if fastPeriod < 1 || slowPeriod < 1 {
+		return nil, fmt.Errorf("ema cross: periods must be positive, got fast=%d slow=%d", fastPeriod, slowPeriod)
 	}
-	if fast >= slow {
-		return nil, fmt.Errorf("ema cross: fast period %d must be shorter than slow %d", fast, slow)
+	if fastPeriod >= slowPeriod {
+		return nil, fmt.Errorf("ema cross: fast period %d must be shorter than slow %d", fastPeriod, slowPeriod)
 	}
 	return &EMACross{
-		fastK:  2 / (float64(fast) + 1),
-		slowK:  2 / (float64(slow) + 1),
-		warmup: slow,
+		fastK:  2 / (float64(fastPeriod) + 1),
+		slowK:  2 / (float64(slowPeriod) + 1),
+		warmup: slowPeriod,
 	}, nil
 }
 

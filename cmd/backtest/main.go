@@ -13,56 +13,53 @@ import (
 	"github.com/tuanta7/nofomo/internal/report"
 	"github.com/tuanta7/nofomo/internal/strategy"
 	"github.com/tuanta7/nofomo/pkg/o11y"
+	"go.uber.org/zap"
+)
+
+const (
+	symbol   = "BTCUSDT"
+	interval = "5m"
+	days     = 365
+	fast     = 9
+	slow     = 21
+	cash     = 1000
+	fee      = 10 // 0.10%
 )
 
 func main() {
-	// A cold fetch of a year of 5m bars takes ~19s; make Ctrl-C work through it.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-
-	const (
-		symbol   = "BTCUSDT"
-		interval = "5m"
-		days     = 365
-		fast     = 12
-		slow     = 26
-		fee      = 5
-		cash     = 10000
-	)
 
 	logger, err := o11y.NewLogger(ctx, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var c market.DataCollector
-	var s candle.Storage
-
-	s, err = candle.NewCSVStorage(path.Join(os.TempDir(), "nofomo"))
+	storagePath := path.Join(os.TempDir(), "nofomo")
+	candleStorage, err := candle.NewCSVStorage(storagePath)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to create candle storage", zap.Error(err))
 	}
+	logger.Info("candle storage", zap.String("path", storagePath))
 
-	c = market.NewSpotDataCollector(s, logger)
-
+	spotCollector := market.NewSpotDataCollector(candleStorage, logger)
 	end := time.Now().UTC()
-	candles, err := c.GetCandleHistory(ctx, market.Request{
+	candles, err := spotCollector.GetCandleHistory(ctx, market.Request{
 		Symbol:   symbol,
 		Interval: interval,
 		Start:    end.AddDate(0, 0, -days),
 		End:      end,
 	})
 	if err != nil {
-		log.Fatal(err)
-	}
-	if len(candles) == 0 {
-		log.Fatalf("no candles for %s %s over the last %d days", symbol, interval, days)
+		logger.Fatal("failed to get candle history", zap.Error(err))
+	} else if len(candles) == 0 {
+		logger.Fatal("no candles", zap.String("symbol", symbol), zap.String("interval", interval), zap.Int("days", days))
 	}
 
-	st, err := strategy.NewEMACross(fast, slow)
+	ema, err := strategy.NewEMACross(fast, slow)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to create EMA strategy", zap.Error(err))
 	}
 
-	report.Run(candles, st, cash, fee).Result(os.Stdout)
+	report.RunBacktest(candles, ema, cash, fee).PrintResult(os.Stdout)
 }

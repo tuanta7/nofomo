@@ -13,13 +13,13 @@ import (
 	"time"
 )
 
-var header = []string{"open_time", "open", "high", "low", "close", "volume", "close_time"}
-
 var _ Storage = (*CSVStorage)(nil)
 
 type CSVStorage struct {
 	basePath string
 }
+
+var header = []string{"open_time", "open", "high", "low", "close", "volume", "close_time"}
 
 func NewCSVStorage(path string) (*CSVStorage, error) {
 	err := os.MkdirAll(path, 0o755)
