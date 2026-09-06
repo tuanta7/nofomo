@@ -1,9 +1,15 @@
 package execution
 
-import "context"
+import "github.com/tuanta7/nofomo/internal/strategy"
 
 type Engine interface {
-	PlaceOrder(ctx context.Context)
-	CancelOrder(ctx context.Context)
-	GetPortfolio(ctx context.Context)
+	Execute(strategy.Signal, float64) Fill
+	Equity(float64) float64
+}
+
+// Fill describes the outcome of an execution attempt.
+type Fill struct {
+	Opened     bool
+	Closed     bool
+	Profitable bool
 }

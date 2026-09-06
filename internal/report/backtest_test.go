@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/tuanta7/nofomo/internal/market/candle"
 	"github.com/tuanta7/nofomo/internal/strategy"
 )
@@ -44,15 +45,10 @@ func TestRunFillsAtNextOpen(t *testing.T) {
 
 	// 1000 / 110 units sold at 200 → 1000 * 200/110.
 	want := 200.0/110.0 - 1
-	if math.Abs(got.Return-want) > 1e-9 {
-		t.Errorf("Return = %v, want %v (a fill at the signal bar's close would differ)", got.Return, want)
-	}
-	if got.Trades != 1 || got.Wins != 1 {
-		t.Errorf("Trades/Wins = %d/%d, want 1/1", got.Trades, got.Wins)
-	}
-	if got.Candles != 4 {
-		t.Errorf("Candles = %d, want 4", got.Candles)
-	}
+	assert.InDelta(t, want, got.Return, 1e-9, "a fill at the signal bar's close would differ")
+	assert.Equal(t, 1, got.Trades)
+	assert.Equal(t, 1, got.Wins)
+	assert.Equal(t, 4, got.Candles)
 }
 
 // A run that ends holding must be closed out, or the return reported is one nobody
@@ -65,12 +61,8 @@ func TestRunLiquidatesOpenPosition(t *testing.T) {
 	}
 	got := RunBacktest(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
 
-	if want := 250.0/100.0 - 1; math.Abs(got.Return-want) > 1e-9 {
-		t.Errorf("Return = %v, want %v", got.Return, want)
-	}
-	if got.Trades != 1 {
-		t.Errorf("Trades = %d, want 1 (the forced exit counts)", got.Trades)
-	}
+	assert.InDelta(t, 250.0/100.0-1, got.Return, 1e-9)
+	assert.Equal(t, 1, got.Trades, "the forced exit counts")
 }
 
 // Fees are charged on both sides, so a flat round trip must lose money.
@@ -83,17 +75,11 @@ func TestRunChargesFeesBothSides(t *testing.T) {
 	}
 	script := signals{strategy.Buy, strategy.Hold, strategy.Sell, strategy.Hold}
 
-	if got := RunBacktest(cs, script, 1000, 0); math.Abs(got.Return) > 1e-9 {
-		t.Errorf("Return with no fee = %v, want 0", got.Return)
-	}
+	assert.InDelta(t, 0, RunBacktest(cs, script, 1000, 0).Return, 1e-9)
 
 	got := RunBacktest(cs, script, 1000, 5)
-	if want := 0.9995*0.9995 - 1; math.Abs(got.Return-want) > 1e-9 {
-		t.Errorf("Return with 5bps = %v, want %v", got.Return, want)
-	}
-	if got.Wins != 0 {
-		t.Errorf("Wins = %d, want 0: a flat round trip loses the fees", got.Wins)
-	}
+	assert.InDelta(t, 0.9995*0.9995-1, got.Return, 1e-9)
+	assert.Equal(t, 0, got.Wins, "a flat round trip loses the fees")
 }
 
 func TestRunDrawdownAndBuyHold(t *testing.T) {
@@ -105,22 +91,15 @@ func TestRunDrawdownAndBuyHold(t *testing.T) {
 	}
 	got := RunBacktest(cs, signals{strategy.Hold, strategy.Hold, strategy.Hold}, 1000, 0)
 
-	if got.MaxDrawdown != 0 || got.Return != 0 {
-		t.Errorf("flat run: MaxDrawdown = %v, Return = %v, want 0/0", got.MaxDrawdown, got.Return)
-	}
-	if want := 80.0/100.0 - 1; math.Abs(got.BuyHold-want) > 1e-9 {
-		t.Errorf("BuyHold = %v, want %v", got.BuyHold, want)
-	}
+	assert.Zero(t, got.MaxDrawdown)
+	assert.Zero(t, got.Return)
+	assert.InDelta(t, 80.0/100.0-1, got.BuyHold, 1e-9)
 
 	// Long through the crash: peak 1000 at bar 0, trough 500 at bar 1.
 	long := RunBacktest(cs, signals{strategy.Buy, strategy.Hold, strategy.Hold}, 1000, 0)
-	if want := -0.5; math.Abs(long.MaxDrawdown-want) > 1e-9 {
-		t.Errorf("MaxDrawdown = %v, want %v", long.MaxDrawdown, want)
-	}
+	assert.InDelta(t, -0.5, long.MaxDrawdown, 1e-9)
 }
 
 func TestRunEmpty(t *testing.T) {
-	if got := RunBacktest(nil, signals{}, 1000, 5); got != (BacktestReport{}) {
-		t.Errorf("run(nil) = %+v, want zero Result", got)
-	}
+	assert.Equal(t, BacktestReport{}, RunBacktest(nil, signals{}, 1000, 5))
 }

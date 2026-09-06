@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/tuanta7/nofomo/internal/market/candle"
 )
 
@@ -73,19 +75,10 @@ func TestEMACross(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := NewEMACross(12, 26)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			got := run(s, candles(tt.prices...))
-			if len(got) != len(tt.want) {
-				t.Fatalf("got %v, want %v", got, tt.want)
-			}
-			for i := range got {
-				if got[i] != tt.want[i] {
-					t.Fatalf("got %v, want %v", got, tt.want)
-				}
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -94,20 +87,15 @@ func TestEMACross(t *testing.T) {
 // any cross there is an artifact of seeding, not of the trend.
 func TestEMACrossSilentDuringWarmup(t *testing.T) {
 	s, err := NewEMACross(3, 10)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	cs := candles(ramp(100, 200, 10)...)
-	if got := run(s, cs); got != nil {
-		t.Fatalf("signalled during warmup: %v", got)
-	}
+	assert.Nil(t, run(s, cs))
 }
 
 func TestEMACrossRejectsBadPeriods(t *testing.T) {
 	for _, tt := range []struct{ fast, slow int }{{26, 12}, {12, 12}, {0, 26}, {12, -1}} {
-		if _, err := NewEMACross(tt.fast, tt.slow); err == nil {
-			t.Errorf("NewEMACross(%d, %d): want error", tt.fast, tt.slow)
-		}
+		_, err := NewEMACross(tt.fast, tt.slow)
+		assert.Error(t, err)
 	}
 }

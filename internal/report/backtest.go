@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/tuanta7/nofomo/internal/execution"
 	"github.com/tuanta7/nofomo/internal/market/candle"
 	"github.com/tuanta7/nofomo/internal/strategy"
 )
@@ -44,13 +45,11 @@ func RunBacktest(
 	}
 
 	var (
-		fee       = feeBasisPoint / 10000
-		start     = cash
-		qty       float64         // units held; 0 means flat
-		entryCost float64         // cash spent entering the open position
-		pending   strategy.Signal // order placed last bar, filled at this bar's open
-		peak      = cash
-		res       = BacktestReport{
+		start   = cash
+		pending strategy.Signal  // order placed last bar, filled at this bar's open
+		engine  execution.Engine = execution.NewBacktestEngine(cash, feeBasisPoint)
+		peak                     = cash
+		res                      = BacktestReport{
 			Candles: len(candles),
 			Start:   candles[0].OpenTime,
 			End:     candles[len(candles)-1].CloseTime,
@@ -62,29 +61,23 @@ func RunBacktest(
 		// Fill what the previous bar's close asked for, at the earliest price actually
 		// reachable: this bar's open. Filling on the signal bar's own close would be
 		// lookahead bias and would flatter every result.
-		switch pending {
-		case strategy.Buy:
-			entryCost = cash
-			qty = cash * (1 - fee) / c.Open
-			cash = 0
-		case strategy.Sell:
-			cash = qty * c.Open * (1 - fee)
-			qty = 0
+		fill := engine.Execute(pending, c.Open)
+		if fill.Closed {
 			res.Trades++
-			if cash > entryCost {
+			if fill.Profitable {
 				res.Wins++
 			}
 		}
 		pending = strategy.Hold
 
-		equity := cash + qty*c.Close
+		equity := engine.Equity(c.Close)
 		peak = max(peak, equity)
 		res.MaxDrawdown = min(res.MaxDrawdown, equity/peak-1)
 
 		switch sig := backtestStrategy.Evaluate(strategy.Context{Candles: candles, Index: i}); {
-		case sig == strategy.Buy && qty == 0:
+		case sig == strategy.Buy:
 			pending = strategy.Buy
-		case sig == strategy.Sell && qty > 0:
+		case sig == strategy.Sell:
 			pending = strategy.Sell
 		}
 		// A signal on the final bar never fills: there is no next open.
@@ -92,14 +85,13 @@ func RunBacktest(
 
 	// Ending long is a position, not a result. Close it at the last close so the
 	// number reported is one a trader could have realised.
-	if qty > 0 {
-		cash = qty * candles[len(candles)-1].Close * (1 - fee)
+	if fill := engine.Execute(strategy.Sell, candles[len(candles)-1].Close); fill.Closed {
 		res.Trades++
-		if cash > entryCost {
+		if fill.Profitable {
 			res.Wins++
 		}
 	}
 
-	res.Return = cash/start - 1
+	res.Return = engine.Equity(candles[len(candles)-1].Close)/start - 1
 	return res
 }
