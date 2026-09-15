@@ -12,7 +12,7 @@ import (
 	"github.com/tuanta7/nofomo/internal/market/candle"
 	"github.com/tuanta7/nofomo/internal/report"
 	"github.com/tuanta7/nofomo/internal/strategy"
-	"github.com/tuanta7/nofomo/pkg/o11y"
+	"github.com/tuanta7/nofomo/pkg/otel"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +30,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	logger, err := o11y.NewLogger(ctx, "")
+	logger, err := otel.NewLogger(ctx, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 	}
 	logger.Info("candle storage", zap.String("path", storagePath))
 
-	spotCollector := market.NewSpotDataCollector(candleStorage, logger)
+	spotCollector := market.NewFuturesDataCollector(candleStorage)
 	end := time.Now().UTC()
 	candles, err := spotCollector.GetCandleHistory(ctx, market.Request{
 		Symbol:   symbol,

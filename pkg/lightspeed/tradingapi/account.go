@@ -1,4 +1,4 @@
-package lightspeed
+package tradingapi
 
 import (
 	"context"
@@ -22,9 +22,9 @@ type AccountsResponse struct {
 
 // GetAccounts retrieves the investor's identity and trading sub-accounts.
 // https://developers.dnse.com.vn/docs/dnse/get-accounts
-func (c *Client) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
+func (c *RestClient) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
 	var result AccountsResponse
-	if err := c.get(ctx, pathAccounts, &result); err != nil {
+	if err := c.Get(ctx, "/accounts", &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -48,8 +48,8 @@ type AccountBalanceResponse struct {
 
 // GetBalance retrieves the balance of a trading subaccount.
 // https://developers.dnse.com.vn/docs/dnse/get-account-balances
-func (c *Client) GetBalance(ctx context.Context, accountNo string) (*AccountBalanceResponse, error) {
-	path := fmt.Sprintf(pathAccountBalances, accountNo)
+func (c *RestClient) GetBalance(ctx context.Context, accountNo string) (*AccountBalanceResponse, error) {
+	path := fmt.Sprintf("", accountNo)
 	var result AccountBalanceResponse
 	if err := c.get(ctx, path, &result); err != nil {
 		return nil, err

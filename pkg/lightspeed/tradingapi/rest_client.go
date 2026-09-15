@@ -1,4 +1,4 @@
-package lightspeed
+package tradingapi
 
 import (
 	"context"
@@ -20,23 +20,20 @@ const (
 	// DNSE date-versions its OpenAPI; required on every request via the "version" header.
 	apiVersion = "2026-05-07"
 
-	baseURL                    = "https://openapi.dnse.com.vn"
-	pathAccounts               = "/accounts"
-	pathAccountBalances        = "/accounts/%s/balances"
-	pathAccountLoanPackages    = "/accounts/%s/loan-packages"
-	pathAccountPurchasingPower = "/accounts/%s/ppse"
+	baseURL        = "https://openapi.dnse.com.vn"
+	sandboxBaseURL = "https://sb-openapi.dnse.com.vn"
 )
 
-type Client struct {
-	client    *resty.Client
+type RestClient struct {
 	apiKey    string
 	apiSecret string
+	client    *resty.Client
 	logger    *zap.Logger
 }
 
-// get sends an HMAC-signed GET request to a path and decodes the JSON response into a result.
-func (c *Client) get(ctx context.Context, path string, result any) error {
-	date, signature, err := c.sign("GET", path)
+// Get sends an HMAC-signed GET request to a path and decodes the JSON response into a result.
+func (c *RestClient) Get(ctx context.Context, path string, result any) error {
+	date, signature, err := c.Sign("GET", path)
 	if err != nil {
 		return err
 	}
@@ -58,9 +55,9 @@ func (c *Client) get(ctx context.Context, path string, result any) error {
 	return nil
 }
 
-// sign builds the HMAC-SHA256 auth headers DNSE requires on every request.
+// Sign builds the HMAC-SHA256 auth headers DNSE requires on every request.
 // https://developers.dnse.com.vn/docs/guide/intro/authentication
-func (c *Client) sign(method, path string) (date, signature string, err error) {
+func (c *RestClient) Sign(method, path string) (date, signature string, err error) {
 	date = time.Now().UTC().Format(time.RFC1123Z)
 
 	nonceBytes := make([]byte, 16)

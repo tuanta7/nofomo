@@ -1,4 +1,4 @@
-# Realtime Stock List 
+# Realtime Stock List
 
 ## 1. System Design
 

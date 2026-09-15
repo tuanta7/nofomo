@@ -3,6 +3,11 @@ package config
 import "github.com/joho/godotenv"
 
 type EnvConfig struct {
+	DNSE DNSEConfig `envconfig:"dnse"`
+}
+
+type DNSEConfig struct {
+	BaseURL   string
 	APIKey    string
 	APISecret string
 }

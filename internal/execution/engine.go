@@ -7,7 +7,6 @@ type Engine interface {
 	Equity(float64) float64
 }
 
-// Fill describes the outcome of an execution attempt.
 type Fill struct {
 	Opened     bool
 	Closed     bool

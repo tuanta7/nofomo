@@ -16,7 +16,10 @@ type Request struct {
 }
 
 type DataCollector interface {
+	// GetCandleHistory returns the candles covering [Start, End).
 	GetCandleHistory(ctx context.Context, request Request) ([]candle.Candle, error)
+	// GetCandleStream returns a channel streaming candles for the given symbol.
 	GetCandleStream(ctx context.Context, symbol string) (<-chan candle.Candle, error)
+	// GetTickStream returns a channel streaming ticks for the given symbol.
 	GetTickStream(ctx context.Context, symbol string) (<-chan tick.Tick, error)
 }

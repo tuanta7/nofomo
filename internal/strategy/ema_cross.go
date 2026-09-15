@@ -51,7 +51,7 @@ func (e *EMACross) Evaluate(ctx Context) Signal {
 	switch {
 	case crossed && above:
 		return Buy
-	case crossed && !above:
+	case crossed: // && !above
 		return Sell
 	default:
 		return Hold

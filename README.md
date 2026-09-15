@@ -1,9 +1,10 @@
 # NoFOMO
 
-Learn algorithmic trading
+Learn algorithmic futures trading using the DNSE LightSpeed API
 
-- DNSE [LightSpeed API](https://entradex.dnse.com.vn/thong-tin-ca-nhan/light-speed) for VN30-Index futures.
-- Binance [Spot Trading API](https://developers.binance.com/en/docs/products/spot/rest-api) for Bitcoin.
+## LightSpeed API
+
+Reference: [DNSE EntradeX](https://entradex.dnse.com.vn/thong-tin-ca-nhan/light-speed) 
 
 ## Roadmap
 

@@ -21,6 +21,10 @@ func NewBacktestEngine(cash, feeBasisPoints float64) *BacktestEngine {
 	}
 }
 
+func (e *BacktestEngine) Equity(price float64) float64 {
+	return e.cash + e.quantity*price
+}
+
 func (e *BacktestEngine) Execute(signal strategy.Signal, price float64) Fill {
 	switch signal {
 	case strategy.Buy:
@@ -31,7 +35,6 @@ func (e *BacktestEngine) Execute(signal strategy.Signal, price float64) Fill {
 		e.entryCost = e.cash
 		e.quantity = e.cash * (1 - e.fee) / price
 		e.cash = 0
-
 		return Fill{
 			Opened: true,
 		}
@@ -42,7 +45,6 @@ func (e *BacktestEngine) Execute(signal strategy.Signal, price float64) Fill {
 
 		e.cash = e.quantity * price * (1 - e.fee)
 		e.quantity = 0
-
 		return Fill{
 			Closed:     true,
 			Profitable: e.cash > e.entryCost,
@@ -50,8 +52,4 @@ func (e *BacktestEngine) Execute(signal strategy.Signal, price float64) Fill {
 	default:
 		return Fill{}
 	}
-}
-
-func (e *BacktestEngine) Equity(price float64) float64 {
-	return e.cash + e.quantity*price
 }
