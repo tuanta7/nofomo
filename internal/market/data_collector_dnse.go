@@ -5,13 +5,10 @@ import (
 
 	"github.com/tuanta7/nofomo/internal/market/candle"
 	"github.com/tuanta7/nofomo/internal/market/tick"
-	"github.com/tuanta7/nofomo/pkg/lightspeed/websocket"
 )
 
 type FuturesDataCollector struct {
-	wsClient     *websocket.Client
-	marketClient *tr
-	store        candle.Storage
+	store candle.Storage
 }
 
 func NewFuturesDataCollector(store candle.Storage) *FuturesDataCollector {

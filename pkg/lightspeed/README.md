@@ -1,27 +1,19 @@
 # LightSpeed Go SDK
 
-Go client for the [DNSE OpenAPI](https://developers.dnse.com.vn/), ported from the official [Python SDK](https://github.com/dnse-tech/openapi-sdk/tree/main/python).
+Go client for the [DNSE OpenAPI](https://developers.dnse.com.vn/docs/guide/intro/api_platform), partly ported from the official [Python SDK](https://github.com/dnse-tech/openapi-sdk/tree/main/python).
 
 ## Installation
 
-## REST 
+### Trading APIs (REST)
 
-### Trading 
+| Function | Description |
+| -------- | ----------- |
+|          |             |
 
-| Function | Description  |
-|----------|--------------|
-|          |              |
+### Real-Time Market Data (WebSocket)
 
-### Market Data
+Limited at 10 connections/user and 200 streams/connection
 
-| Function | Description  |
-|----------|--------------|
-|          |              |
-
-## WebSocket
-
-###  Real-Time Market Data
-
-| Function | Description  |
-|----------|--------------|
-|          |              |
+| Function           | Description                                                           |
+| ------------------ | --------------------------------------------------------------------- |
+| SubcribeOHLCClosed | Streams completed OHLCV candles for stocks, derivatives, and indexes. |
