@@ -1,9 +1,16 @@
-package tradingapi
+package trading
 
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/tuanta7/nofomo/pkg/lightspeed/rest"
 )
+
+type AccountClient struct {
+	*rest.Client
+}
 
 // Account is a single trading subaccount under the authenticated investor.
 type Account struct {
@@ -22,9 +29,9 @@ type AccountsResponse struct {
 
 // GetAccounts retrieves the investor's identity and trading sub-accounts.
 // https://developers.dnse.com.vn/docs/dnse/get-accounts
-func (c *RestClient) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
+func (a *AccountClient) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
 	var result AccountsResponse
-	if err := c.Get(ctx, "/accounts", &result); err != nil {
+	if err := a.Request(ctx, http.MethodGet, "/accounts", &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -48,10 +55,10 @@ type AccountBalanceResponse struct {
 
 // GetBalance retrieves the balance of a trading subaccount.
 // https://developers.dnse.com.vn/docs/dnse/get-account-balances
-func (c *RestClient) GetBalance(ctx context.Context, accountNo string) (*AccountBalanceResponse, error) {
-	path := fmt.Sprintf("", accountNo)
+func (a *AccountClient) GetBalance(ctx context.Context, accountNo string) (*AccountBalanceResponse, error) {
+	path := fmt.Sprintf("/accounts/%s/balances", accountNo)
 	var result AccountBalanceResponse
-	if err := c.get(ctx, path, &result); err != nil {
+	if err := a.Request(ctx, http.MethodGet, path, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil

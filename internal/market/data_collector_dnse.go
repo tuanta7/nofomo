@@ -9,8 +9,9 @@ import (
 )
 
 type FuturesDataCollector struct {
-	client *websocket.Client
-	store  candle.Storage
+	wsClient     *websocket.Client
+	marketClient *tr
+	store        candle.Storage
 }
 
 func NewFuturesDataCollector(store candle.Storage) *FuturesDataCollector {

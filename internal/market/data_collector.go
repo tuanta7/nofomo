@@ -10,7 +10,7 @@ import (
 
 type Request struct {
 	Symbol   string
-	Interval string // Binance kline interval, e.g. "1m", "5m", "1h"
+	Interval string
 	Start    time.Time
 	End      time.Time
 }
