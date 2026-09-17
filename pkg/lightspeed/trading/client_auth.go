@@ -12,8 +12,11 @@ import (
 	"time"
 )
 
+const (
+	SignatureAlgorithm = "hmac-sha256"
+)
+
 // Sign builds the HMAC-SHA256 auth headers DNSE requires on every request.
-// https://developers.dnse.com.vn/docs/guide/intro/authentication
 func (c *Client) Sign(method, path string) (date, signature string, err error) {
 	date = time.Now().UTC().Format(time.RFC1123Z)
 
@@ -29,11 +32,11 @@ func (c *Client) Sign(method, path string) (date, signature string, err error) {
 
 	mac := hmac.New(sha256.New, []byte(c.apiSecret))
 	mac.Write([]byte(sigString))
-	sig := url.QueryEscape(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
+	encodedSignature := url.QueryEscape(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
 
 	signature = fmt.Sprintf(
-		`Signature keyId="%s",algorithm="hmac-sha256",headers="(request-target) date",signature="%s",nonce="%s"`,
-		c.apiKey, sig, nonce,
+		`Signature keyId="%s",algorithm="%s",headers="(request-target) date",signature="%s",nonce="%s"`,
+		c.apiKey, SignatureAlgorithm, encodedSignature, nonce,
 	)
 	return date, signature, nil
 }
